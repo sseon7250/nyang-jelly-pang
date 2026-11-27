@@ -1118,6 +1118,7 @@
   /* --- 막판 긴장감 (남은 턴 3 이하 / 남은 시간 10초 이하) --- */
   function dangerActive() {
     if (!S.running || S.over) return false;
+    if (!modalEl.classList.contains('hidden')) return false;
     if (S.mode === 'time') return S.timeLeft <= 10;
     return S.turns <= 3;
   }
@@ -1826,8 +1827,8 @@
       if (S.feverLeft <= 0) endFever();
     }
 
-    // 60초 타임어택 카운트다운
-    if (S.mode === 'time' && S.running && !S.over) {
+    // 60초 타임어택 카운트다운 (도움말 등 모달이 열려 있으면 잠시 멈춤)
+    if (S.mode === 'time' && S.running && !S.over && modalEl.classList.contains('hidden')) {
       S.timeLeft = Math.max(0, S.timeLeft - dt);
       var nowSec = Math.ceil(S.timeLeft);
       var secTxt = nowSec + 's';
