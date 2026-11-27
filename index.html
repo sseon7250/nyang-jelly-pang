@@ -1516,6 +1516,7 @@
     stageFlash('STAGE ' + S.stage + ' CLEAR', '+' + fmt(bonus) + '점 보너스!');
     S.stage++;
     S.stageScore = 0;
+    S.eggUsed = false;
     S.goal = STAGE_GOAL_BASE + (S.stage - 1) * STAGE_GOAL_STEP;
     S.busy = false;
     updateHUD();
