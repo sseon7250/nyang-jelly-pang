@@ -170,6 +170,58 @@
     35%{transform:scale(1) rotate(0);} 100%{transform:scale(1);}
   }
 
+  /* ---------- 막판 긴장감: 붉은 맥박 비네트 ---------- */
+  #dangerVignette{
+    position:fixed;inset:0;z-index:24;pointer-events:none;opacity:0;
+    background:radial-gradient(118% 88% at 50% 50%, rgba(255,60,90,0) 48%, rgba(255,64,96,.14) 72%, rgba(214,18,60,.42) 100%);
+    box-shadow:inset 0 0 70px 14px rgba(255,56,92,.34);
+    transition:opacity .4s ease;
+  }
+  #dangerVignette.on{animation:dangerPulse 1.05s ease-in-out infinite;}
+  @keyframes dangerPulse{0%,100%{opacity:.55;}45%{opacity:1;}}
+
+  /* ---------- 피버 타임 ---------- */
+  #board.fever{animation:feverGlow .62s ease-in-out infinite alternate;}
+  @keyframes feverGlow{
+    from{box-shadow:0 14px 32px rgba(255,120,140,.30), inset 0 0 0 2px #fff, inset 0 -6px 0 rgba(226,205,238,.35), 0 0 0 2px rgba(255,186,110,.40), 0 0 22px rgba(255,170,120,.35);}
+    to{box-shadow:0 16px 38px rgba(255,110,150,.44), inset 0 0 0 2px #FFF9E4, inset 0 -6px 0 rgba(226,205,238,.35), 0 0 0 4px rgba(255,214,120,.80), 0 0 34px rgba(255,196,120,.55);}
+  }
+  #feverBanner{
+    position:absolute;left:50%;top:0;z-index:3;pointer-events:none;white-space:nowrap;
+    transform:translate(-50%,-112%) scale(.55);opacity:0;
+    padding:5px 20px 6px;border-radius:99px;overflow:hidden;
+    background:linear-gradient(100deg,#FFD86B,#FF9FBB 34%,#C4AEF5 66%,#8CE3C8);
+    background-size:220% 100%;
+    color:#fff;font-weight:900;font-size:13px;letter-spacing:.4px;
+    text-shadow:0 1px 0 rgba(150,80,110,.5);
+    box-shadow:0 6px 18px rgba(255,140,120,.48), inset 0 0 0 2px rgba(255,255,255,.55);
+    transition:transform .22s cubic-bezier(.2,1.7,.4,1),opacity .16s;
+  }
+  #feverBanner.show{opacity:1;transform:translate(-50%,-112%) scale(1);animation:feverHue 1.3s linear infinite;}
+  @keyframes feverHue{from{background-position:0 0;}to{background-position:220% 0;}}
+  #feverBanner .fb-bar{
+    position:absolute;left:0;bottom:0;height:3px;width:100%;
+    background:rgba(255,255,255,.9);transform-origin:left center;transform:scaleX(1);
+  }
+  #feverBanner::before,#feverBanner::after{
+    content:"✨";position:absolute;top:50%;font-size:11px;line-height:1;
+    transform:translateY(-50%);animation:twinkle .85s ease-in-out infinite;
+  }
+  #feverBanner::before{left:6px;}
+  #feverBanner::after{right:6px;animation-delay:.42s;}
+  @keyframes twinkle{0%,100%{opacity:.35;transform:translateY(-50%) scale(.8);}50%{opacity:1;transform:translateY(-50%) scale(1.2);}}
+
+  #catAvatar{cursor:pointer;}
+  #catAvatar.tap{animation:catTap .26s cubic-bezier(.2,1.6,.4,1);}
+  @keyframes catTap{0%{transform:scale(1);}45%{transform:scale(.88) rotate(-4deg);}100%{transform:scale(1);}}
+
+  .btn.time{
+    background:linear-gradient(135deg,#9EE7FF,#5FC2D9 55%,#45BC9C);color:#fff;
+    box-shadow:0 5px 0 #3E9E86, 0 12px 22px rgba(80,190,170,.30);
+  }
+  .btn.time:active{transform:translateY(4px);box-shadow:0 1px 0 #3E9E86;}
+  .stat.turns.time .stat-value{color:#3EA487;}
+
   #legend{
     display:flex;flex-wrap:wrap;gap:5px;justify-content:center;
     font-size:9.5px;font-weight:800;color:#A98FBB;padding:0 2px;
@@ -289,6 +341,19 @@
     transition:opacity .22s,transform .22s;max-width:90vw;
   }
   #toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* 작은 화면(높이 700px 이하)에서도 시작/결과 창이 한 화면에 들어오게 */
+  @media (max-height:700px){
+    .modal-card{padding:16px 16px 14px;border-radius:26px;}
+    .modal-paws{font-size:18px;margin-bottom:2px;}
+    .modal-title{font-size:23px;}
+    .modal-sub{margin-bottom:10px;font-size:11px;}
+    .rule-list{gap:5px;margin-bottom:12px;}
+    .rule{padding:6px 9px;font-size:10.5px;gap:8px;}
+    .rule .rule-ico{font-size:13px;}
+    .btn{padding:12px 10px;margin-top:7px;font-size:14px;}
+    .modal-foot{margin-top:9px;}
+  }
 </style>
 </head>
 <body>
@@ -310,8 +375,8 @@
         <span class="stat-label">SCORE</span>
         <span class="stat-value" id="scoreVal">0</span>
       </div>
-      <div class="stat turns">
-        <span class="stat-label">남은 턴</span>
+      <div class="stat turns" id="turnsStat">
+        <span class="stat-label" id="turnsLabel">남은 턴</span>
         <span class="stat-value" id="turnsVal">25</span>
       </div>
     </div>
@@ -347,6 +412,7 @@
       <canvas id="game"></canvas>
       <div id="comboBadge"></div>
       <div id="stageFlash"></div>
+      <div id="feverBanner">⚡ FEVER TIME ×2<i class="fb-bar" id="feverBar"></i></div>
     </div>
     <div id="legend">
       <span>👆 같은 젤리 2개+</span>
@@ -361,11 +427,12 @@
       <div class="ad-title">배너 광고 영역</div>
       <div class="ad-sub">AdMob · 웹 배너 320×50 자리</div>
     </div>
-    <div class="ad-note">냥젤리 팡팡 · 시안 v1.0 (광고 슬롯 테스트용 데모)</div>
+    <div class="ad-note">냥젤리 팡팡 · 시안 v1.1 (광고 슬롯 테스트용 데모)</div>
   </footer>
 </div>
 
 <div id="modal" class="hidden"><div class="modal-card" id="modalCard"></div></div>
+<div id="dangerVignette" aria-hidden="true"></div>
 <div id="toast"></div>
 
 <script>
@@ -381,7 +448,12 @@
   var STAGE_GOAL_STEP = 300;
   var COMBO_WINDOW = 2800;      // ms
   var KEY_BEST = 'nyangJelly.best.v1';
+  var KEY_BEST_TIME = 'nyangJelly.bestTime.v1';
   var KEY_SOUND = 'nyangJelly.sound.v1';
+  var TIME_ATTACK_SEC = 60;         // 타임어택 기본 시간
+  var TIME_ATTACK_BONUS_SEC = 15;   // 광고 이어하기
+  var FEVER_SEC = 5;                // 피버 타임 지속
+  var FEVER_COMBO = 4;              // 피버 발동 콤보
 
   // line = 젤리 윤곽선 전용 진한 톤 (파스텔 채우기 위에서도 또렷하게)
   var PALETTE = [
@@ -421,6 +493,12 @@
   var goalFill = document.getElementById('goalFill');
   var goalText = document.getElementById('goalText');
   var bestText = document.getElementById('bestText');
+  var turnsLabel = document.getElementById('turnsLabel');
+  var turnsStat = document.getElementById('turnsStat');
+  var dangerEl = document.getElementById('dangerVignette');
+  var feverBanner = document.getElementById('feverBanner');
+  var feverBar = document.getElementById('feverBar');
+  var catAvatarEl = document.getElementById('catAvatar');
 
   var S = {
     grid: [],
@@ -444,6 +522,15 @@
     shake: 0,
     adUses: 0,
     shownScore: 0,
+    mode: 'classic',
+    timeLeft: 0,
+    bestTime: 0,
+    feverLeft: 0,
+    feverCount: 0,
+    eggUsed: false,
+    eggCount: 0,
+    dangerOn: false,
+    tickAcc: 0,
     bestAtStart: 0,
     totalPopped: 0
   };
@@ -462,6 +549,8 @@
     try {
       var b = localStorage.getItem(KEY_BEST);
       if (b) S.best = parseInt(b, 10) || 0;
+      var bt = localStorage.getItem(KEY_BEST_TIME);
+      if (bt) S.bestTime = parseInt(bt, 10) || 0;
       var s = localStorage.getItem(KEY_SOUND);
       if (s === '0') S.sound = false;
     } catch (e) { /* 저장소 없이도 동작 */ }
@@ -469,6 +558,17 @@
   function saveBest() {
     if (S.score > S.best) S.best = S.score;
     try { localStorage.setItem(KEY_BEST, String(S.best)); } catch (e) {}
+  }
+  function saveBestTime() {
+    if (S.score > S.bestTime) S.bestTime = S.score;
+    try { localStorage.setItem(KEY_BEST_TIME, String(S.bestTime)); } catch (e) {}
+  }
+  function noteBest() {
+    if (S.mode === 'time') {
+      if (S.score > S.bestTime) { S.bestTime = S.score; saveBestTime(); }
+    } else {
+      if (S.score > S.best) { S.best = S.score; saveBest(); }
+    }
   }
   function saveSound() {
     try { localStorage.setItem(KEY_SOUND, S.sound ? '1' : '0'); } catch (e) {}
@@ -544,6 +644,27 @@
   function sfxGameOver() {
     var notes = [440, 392, 330, 262];
     for (var i = 0; i < notes.length; i++) tone(notes[i], 0.34, 'sine', 0.13, null, i * 0.14);
+  }
+  function sfxHeartbeat() {
+    // 째깍 + 심장박동 두 번 (막판 긴장감)
+    if (!S.sound || !AC) return;
+    tone(66, 0.17, 'sine', 0.20, 42);
+    tone(58, 0.15, 'sine', 0.11, 38, 0.23);
+    tone(1320, 0.028, 'triangle', 0.022, 980, 0.02);
+  }
+  function sfxFever() {
+    var notes = [392, 523, 659, 784, 1046];
+    for (var i = 0; i < notes.length; i++) {
+      tone(notes[i], 0.18, 'triangle', 0.10, null, i * 0.06);
+      tone(notes[i] * 2, 0.10, 'sine', 0.035, null, i * 0.06 + 0.01);
+    }
+    tone(1568, 0.42, 'triangle', 0.055, null, 0.30);
+    noiseBurst(0.16, 0.05, 5200);
+  }
+  function sfxEgg() {
+    var notes = [659, 880, 1175, 1568, 2093];
+    for (var i = 0; i < notes.length; i++) tone(notes[i], 0.20, 'triangle', 0.11, null, i * 0.07);
+    noiseBurst(0.20, 0.06, 5200);
   }
 
   /* =========================================================
@@ -956,29 +1077,130 @@
     S.lastPopAt = now;
     if (S.combo >= 2) showCombo();
     if (S.combo >= 3) setMascot('콤보 x' + S.combo + '! 손맛 좋은데? 🔥');
+    if (S.combo === FEVER_COMBO && S.feverLeft <= 0) startFever();
   }
 
   function showCombo() {
+    if (S.feverLeft > 0) return;   // 피버 배너가 같은 자리를 쓴다
     comboEl.textContent = '🔥 COMBO x' + S.combo;
     comboEl.classList.add('show');
     clearTimeout(comboHideTimer);
     comboHideTimer = setTimeout(function () { comboEl.classList.remove('show'); }, 2200);
   }
 
+  /* --- 피버 타임 --- */
+  function startFever() {
+    if (S.feverLeft > 0) return;
+    S.feverLeft = FEVER_SEC;
+    S.feverCount++;
+    boardEl.classList.add('fever');
+    if (feverBanner) feverBanner.classList.add('show');
+    if (feverBar) feverBar.style.transform = 'scaleX(1)';
+    comboEl.classList.remove('show');
+    sfxFever();
+    addText(boardPx / 2, boardPx * 0.46, 'FEVER TIME!', '#FF8A3D', clamp(cellSize * 0.78, 22, 34), 1.1,
+      'rgba(255,255,255,0.96)', Math.max(4, cellSize * 0.22));
+    addRing(boardPx / 2, boardPx * 0.5, '255,214,120', boardPx * 0.62, 0.6);
+    burstAt(boardPx * 0.2, boardPx * 0.3, 1, 10, 1.2);
+    burstAt(boardPx * 0.8, boardPx * 0.3, 1, 10, 1.2);
+    setMascot('피버 타임! 5초 동안 점수 2배 ⚡');
+  }
+
+  function endFever() {
+    if (S.feverLeft <= 0 && !boardEl.classList.contains('fever')) { S.feverLeft = 0; return; }
+    S.feverLeft = 0;
+    boardEl.classList.remove('fever');
+    if (feverBanner) feverBanner.classList.remove('show');
+    if (feverBar) feverBar.style.transform = 'scaleX(0)';
+    if (S.running && !S.over) setMascot('피버 끝! 다시 콤보 노려볼까 🐾');
+  }
+
+  /* --- 막판 긴장감 (남은 턴 3 이하 / 남은 시간 10초 이하) --- */
+  function dangerActive() {
+    if (!S.running || S.over) return false;
+    if (S.mode === 'time') return S.timeLeft <= 10;
+    return S.turns <= 3;
+  }
+  function updateDanger(dt) {
+    var on = dangerActive();
+    if (on !== S.dangerOn) {
+      S.dangerOn = on;
+      if (dangerEl) dangerEl.classList.toggle('on', on);
+      S.tickAcc = 0;
+      if (on) {
+        setMascot(S.mode === 'time' ? '10초 남았어! 마지막 스퍼트 ⏰' : '턴이 얼마 안 남았어! 집중! 🔥');
+      }
+    }
+    if (!on) return;
+    S.tickAcc += dt;
+    var gap = S.mode === 'time'
+      ? (S.timeLeft <= 5 ? 0.5 : 0.85)
+      : (S.turns <= 1 ? 0.52 : 0.8);
+    if (S.tickAcc >= gap) { S.tickAcc = 0; sfxHeartbeat(); }
+  }
+
+  /* --- 숨겨진 이스터에그: 마스코트 5번 연타 --- */
+  var mascotTaps = [];
+  function triggerEgg(tries) {
+    tries = tries || 0;
+    if (S.busy && tries < 8) {
+      setTimeout(function () { triggerEgg(tries + 1); }, 200);
+      return;
+    }
+    setMascot('냐옹!! 숨겨진 황금 츄르 발견!! 🎁✨');
+    stageFlash('🎁✨', '숨겨진 황금 츄르 발견!');
+    sfxEgg();
+
+    var cells = [];
+    eachCell(function (r, c) {
+      var j = S.grid[r][c];
+      if (j && j.kind === 'normal') cells.push([r, c]);
+    });
+    for (var i = cells.length - 1; i > 0; i--) {
+      var k = Math.floor(Math.random() * (i + 1));
+      var tmp = cells[i]; cells[i] = cells[k]; cells[k] = tmp;
+    }
+    var cnt = Math.min(cells.length, Math.random() < 0.5 ? 1 : 2);
+    for (var n = 0; n < cnt; n++) {
+      var cell = cells[n];
+      var cur = S.grid[cell[0]][cell[1]];
+      var kind = Math.random() < 0.55 ? 'bomb' : 'rainbow';
+      S.grid[cell[0]][cell[1]] = { color: cur ? cur.color : 0, kind: kind };
+      var cx = cell[1] * cellSize + cellSize / 2;
+      var cy = cell[0] * cellSize + cellSize / 2;
+      addRing(cx, cy, '255,214,120', cellSize * 2.0, 0.6);
+      burstAt(cx, cy, 1, 10, 1.1);
+    }
+    addRing(boardPx / 2, boardPx / 2, '255,236,150', boardPx * 0.7, 0.72);
+    addText(boardPx / 2, boardPx * 0.42, '🎁 +BONUS', '#E8A21E', clamp(cellSize * 0.6, 18, 26), 1.1,
+      'rgba(255,255,255,0.96)', Math.max(3, cellSize * 0.18));
+    confetti();
+    toast('🎁 숨겨진 황금 츄르 발견! 젤리가 변신했어 ✨');
+  }
+
   function addScore(n) {
     S.score += n;
     S.stageScore += n;
-    if (S.score > S.best) { S.best = S.score; saveBest(); }
+    noteBest();
     updateHUD();
   }
 
   function updateHUD() {
     stageVal.textContent = String(S.stage);
-    turnsVal.textContent = String(Math.max(0, S.turns));
+    if (S.mode === 'time') {
+      turnsLabel.textContent = '남은 시간';
+      turnsVal.textContent = Math.max(0, Math.ceil(S.timeLeft)) + 's';
+      turnsStat.classList.add('time');
+      bestText.textContent = '타임 최고 ' + fmt(S.bestTime);
+    } else {
+      turnsLabel.textContent = '남은 턴';
+      turnsVal.textContent = String(Math.max(0, S.turns));
+      turnsStat.classList.remove('time');
+      bestText.textContent = '최고 ' + fmt(S.best);
+    }
     var pct = clamp((S.stageScore / S.goal) * 100, 0, 100);
     goalFill.style.width = pct.toFixed(1) + '%';
     goalText.innerHTML = '목표 <b>' + fmt(S.stageScore) + '</b> / ' + fmt(S.goal);
-    bestText.textContent = '최고 ' + fmt(S.best);
     scoreVal.textContent = fmt(S.shownScore);
   }
 
@@ -1062,7 +1284,7 @@
     if (source === 'bomb') base = n * 14;
     else if (source === 'rainbow') base = n * 16;
     else base = n * 10 + Math.max(0, n - 2) * 12;
-    var gain = Math.round(base * comboMultiplier());
+    var gain = Math.round(base * comboMultiplier() * (S.feverLeft > 0 ? 2 : 1));
     addScore(gain);
 
     // 중심 좌표
@@ -1188,7 +1410,15 @@
 
   function checkEnd() {
     if (!S.running) return;
-    if (S.stageScore >= S.goal) { S.busy = true; setTimeout(stageClear, 260); return; }
+    if (S.stageScore >= S.goal) {
+      S.busy = true;
+      setTimeout(S.mode === 'time' ? timeStageClear : stageClear, 260);
+      return;
+    }
+    if (S.mode === 'time') {
+      if (S.timeLeft <= 0) { S.busy = true; setTimeout(timeOver, 320); }
+      return;
+    }
     if (S.turns <= 0) { S.busy = true; setTimeout(gameOver, 320); }
   }
 
@@ -1210,22 +1440,32 @@
     S.stageScore = 0;
     S.goal = STAGE_GOAL_BASE + (S.stage - 1) * STAGE_GOAL_STEP;
     S.combo = 0;
+    S.lastPopAt = 0;
     S.over = false;
     S.busy = false;
     S.running = true;
+    S.eggUsed = false;
+    if (S.feverLeft > 0) endFever();
+    if (S.mode === 'time' && S.stage === 1) S.timeLeft = TIME_ATTACK_SEC;
     newBoard();
     updateHUD();
     closeModal();
-    setMascot('STAGE ' + S.stage + '! 목표 ' + fmt(S.goal) + '점을 넘겨봐 🎯');
-    stageFlash('STAGE ' + S.stage, '목표 ' + fmt(S.goal) + '점 · ' + S.turns + '턴');
+    if (S.mode === 'time') {
+      setMascot('60초 동안 최대한 많이 터뜨려! ⏱️');
+      stageFlash('⏱️ 60초 타임어택', '최고 점수에 도전!');
+    } else {
+      setMascot('STAGE ' + S.stage + '! 목표 ' + fmt(S.goal) + '점을 넘겨봐 🎯');
+      stageFlash('STAGE ' + S.stage, '목표 ' + fmt(S.goal) + '점 · ' + S.turns + '턴');
+    }
+    updateDanger(0);
   }
 
   function stageClear() {
-    if (!S.running) return;
+    if (!S.running || S.mode === 'time') return;
     S.running = false;
     var bonus = S.turns * 40;
     S.score += bonus;
-    if (S.score > S.best) { S.best = S.score; saveBest(); }
+    noteBest();
     updateHUD();
     sfxStageClear();
     confetti();
@@ -1244,11 +1484,11 @@
   }
 
   function gameOver() {
-    if (!S.running) return;
+    if (!S.running || S.mode === 'time') return;
     S.running = false;
     S.over = true;
     var isNew = S.score > S.bestAtStart && S.score > 0;
-    if (S.score > S.best) { S.best = S.score; saveBest(); }
+    noteBest();
     updateHUD();
     sfxGameOver();
     setMascot('턴을 다 썼어... 광고 보고 한 번 더? 😿');
@@ -1266,10 +1506,53 @@
     );
   }
 
+  /* --- 타임어택 전용: 스테이지 돌파 / 시간 종료 --- */
+  function timeStageClear() {
+    if (!S.running || S.mode !== 'time') return;
+    var bonus = 150 + S.stage * 100;
+    S.score += bonus;
+    noteBest();
+    stageFlash('STAGE ' + S.stage + ' CLEAR', '+' + fmt(bonus) + '점 보너스!');
+    S.stage++;
+    S.stageScore = 0;
+    S.goal = STAGE_GOAL_BASE + (S.stage - 1) * STAGE_GOAL_STEP;
+    S.busy = false;
+    updateHUD();
+  }
+
+  function timeOver() {
+    if (S.mode !== 'time') return;
+    if (S.over && !S.running) return;
+    S.running = false;
+    S.over = true;
+    S.busy = true;
+    var isNew = S.score > S.bestAtStart && S.score > 0;
+    noteBest();
+    endFever();
+    if (dangerEl) dangerEl.classList.remove('on');
+    S.dangerOn = false;
+    updateHUD();
+    sfxGameOver();
+    setMascot('시간 종료! 광고 보고 15초 더 달릴까? 😿');
+    openModal(
+      '<div class="modal-paws">⏱️😿</div>' +
+      '<h1 class="modal-title">시간 종료!</h1>' +
+      '<p class="modal-sub">60초가 다 지났어요! 최고 점수에 도전해 봐요</p>' +
+      '<div class="result-row"><span>도달 스테이지</span><b>STAGE ' + S.stage + '</b></div>' +
+      '<div class="result-row hl"><span>총 점수</span><b>' + fmt(S.score) + '</b>' + (isNew ? '<span class="badge-new">NEW</span>' : '') + '</div>' +
+      '<div class="result-row"><span>타임 최고 기록</span><b>' + fmt(S.bestTime) + '</b></div>' +
+      '<button class="btn ad" data-act="ad">📺 광고 보고 +15초 이어하기</button>' +
+      '<button class="btn primary" data-act="restartTime">⏱️ 타임어택 다시</button>' +
+      '<button class="btn ghost" data-act="home">🏠 처음 화면으로</button>' +
+      '<div class="modal-note">시안 버전: 광고 버튼은 2초 카운트다운 후 +15초를 지급하는 테스트 동작이에요.</div>'
+    );
+  }
+
   /* =========================================================
      11. 광고 시뮬레이션
      ========================================================= */
   function showRewardAd() {
+    var rewardTxt = S.mode === 'time' ? '+15초' : '+5턴';
     openModal(
       '<h1 class="modal-title" style="font-size:20px">광고 재생 중...</h1>' +
       '<p class="modal-sub">보상형 광고 (시안 · 테스트)</p>' +
@@ -1278,7 +1561,7 @@
       '<div class="ad-count" id="adCount">2</div>' +
       '<div class="ad-barlines"><i></i></div>' +
       '</div>' +
-      '<div class="modal-note">실제 서비스에서는 여기에 AdMob 보상형 광고가 재생되고,<br>시청 완료 시 +5턴이 지급됩니다.</div>'
+      '<div class="modal-note">실제 서비스에서는 여기에 AdMob 보상형 광고가 재생되고,<br>시청 완료 시 ' + rewardTxt + '이 지급됩니다.</div>'
     );
     var n = 2;
     var iv = setInterval(function () {
@@ -1294,6 +1577,22 @@
 
   function grantAdReward() {
     S.adUses++;
+    if (S.mode === 'time') {
+      S.timeLeft += TIME_ATTACK_BONUS_SEC;
+      S.over = false;
+      S.busy = false;
+      S.running = true;
+      S.combo = 0;
+      S.lastPopAt = 0;
+      updateHUD();
+      closeModal();
+      toast('📺 광고 시청 완료! +15초 지급 ⏱️');
+      sfxStageClear();
+      setMascot('+15초 충전 완료! 이어서 달려 🐾');
+      updateDanger(0);
+      if (!hasMove()) reshuffle();
+      return;
+    }
     S.turns += 5;
     S.over = false;
     S.busy = false;
@@ -1355,10 +1654,13 @@
       '<div class="rule"><span class="rule-ico">👆</span><div>같은 색 <b>고양이 발바닥 젤리 2개 이상</b>을 터치하면 팡!</div></div>' +
       '<div class="rule"><span class="rule-ico">💥</span><div>한 번에 <b>5개 이상</b> → <b>츄르 폭탄</b> (터뜨리면 주변 3×3 폭발)</div></div>' +
       '<div class="rule"><span class="rule-ico">🌈</span><div>한 번에 <b>7개↑</b> → <b>무지개 젤리</b> (같은 색 전부 제거)</div></div>' +
-      '<div class="rule"><span class="rule-ico">🎯</span><div><b>25턴</b> 안에 목표 점수를 넘으면 다음 스테이지로!</div></div>' +
+      '<div class="rule"><span class="rule-ico">⚡</span><div><b>4콤보</b>마다 <b>5초 피버 타임</b>! 그동안 점수 <b>×2</b></div></div>' +
+      '<div class="rule"><span class="rule-ico">🎯</span><div><b>클래식</b>: 25턴 안에 목표 점수 넘기기</div></div>' +
+      '<div class="rule"><span class="rule-ico">⏱️</span><div><b>타임어택</b>: 60초 동안 최고 점수에 도전!</div></div>' +
       '</div>' +
-      '<button class="btn primary" data-act="start">▶ 시작하기</button>' +
-      '<div class="modal-foot">최고 기록 <b>' + fmt(S.best) + '</b>점</div>'
+      '<button class="btn primary" data-act="startClassic">🐾 클래식 (25턴)</button>' +
+      '<button class="btn time" data-act="startTime">⏱️ 60초 타임어택</button>' +
+      '<div class="modal-foot">클래식 최고 <b>' + fmt(S.best) + '</b>점 · 타임 최고 <b>' + fmt(S.bestTime) + '</b>점</div>'
     );
   }
 
@@ -1370,26 +1672,50 @@
       '<div class="rule"><span class="rule-ico">💥</span><div>한 번에 <b>5~6개</b> → <b>츄르 폭탄</b>이 생겨요. 터뜨리면 주변 3×3이 함께 폭발!</div></div>' +
       '<div class="rule"><span class="rule-ico">🌈</span><div>한 번에 <b>7개 이상</b> → <b>무지개 젤리</b>가 생겨요. 터뜨리면 가장 많은 색이 싹 사라져요!</div></div>' +
       '<div class="rule"><span class="rule-ico">🔥</span><div>2.8초 안에 계속 터뜨리면 <b>콤보 보너스</b> (최대 x2.5)</div></div>' +
-      '<div class="rule"><span class="rule-ico">🎯</span><div><b>25턴</b> 안에 목표 점수를 넘으면 클리어. 남은 턴은 <b>턴당 40점</b> 보너스!</div></div>' +
-      '<div class="rule"><span class="rule-ico">📺</span><div>턴을 다 쓰면 <b>광고 보고 +5턴</b> 이어하기 (시안: 2초 테스트)</div></div>' +
+      '<div class="rule"><span class="rule-ico">⚡</span><div><b>4콤보</b> 달성 시 <b>5초 피버 타임</b>! 피버 중 점수 <b>×2</b></div></div>' +
+      '<div class="rule"><span class="rule-ico">🎯</span><div><b>클래식</b>: 25턴 안에 목표 점수를 넘으면 클리어. 남은 턴은 <b>턴당 40점</b> 보너스!</div></div>' +
+      '<div class="rule"><span class="rule-ico">⏱️</span><div><b>타임어택</b>: 60초 카운트다운! 0초가 되면 종료, 최고 점수는 따로 저장</div></div>' +
+      '<div class="rule"><span class="rule-ico">📺</span><div>끝나면 <b>광고 보고 이어하기</b> (클래식 +5턴 / 타임어택 +15초, 시안: 2초 테스트)</div></div>' +
       '</div>' +
       '<button class="btn primary" data-act="closeHelp">확인</button>'
     );
   }
 
+  function startGame(mode) {
+    endFever();
+    S.mode = mode === 'time' ? 'time' : 'classic';
+    S.stage = 1;
+    S.score = 0;
+    S.adUses = 0;
+    S.shownScore = 0;
+    S.timeLeft = S.mode === 'time' ? TIME_ATTACK_SEC : 0;
+    S.feverLeft = 0;
+    S.feverCount = 0;
+    S.eggUsed = false;
+    S.eggCount = 0;
+    S.bestAtStart = S.mode === 'time' ? S.bestTime : S.best;
+    startStage();
+  }
+
   function handleAction(act) {
-    if (act === 'start') {
-      S.stage = 1; S.score = 0; S.adUses = 0; S.shownScore = 0;
-      S.bestAtStart = S.best;
-      startStage();
+    if (act === 'start' || act === 'startClassic') {
+      startGame('classic');
+    } else if (act === 'startTime') {
+      startGame('time');
     } else if (act === 'next') {
       startStage();
     } else if (act === 'restart') {
-      S.stage = 1; S.score = 0; S.adUses = 0; S.shownScore = 0;
-      S.bestAtStart = S.best;
-      startStage();
+      startGame('classic');
+    } else if (act === 'restartTime') {
+      startGame('time');
     } else if (act === 'home') {
-      S.running = false; S.over = true;
+      S.running = false;
+      S.over = true;
+      endFever();
+      if (dangerEl) dangerEl.classList.remove('on');
+      S.dangerOn = false;
+      S.mode = 'classic';
+      updateHUD();
       startScreen();
     } else if (act === 'ad') {
       showRewardAd();
@@ -1492,6 +1818,28 @@
       S.shownScore = S.score;
       scoreVal.textContent = fmt(S.shownScore);
     }
+
+    // 피버 타임 카운트다운
+    if (S.feverLeft > 0) {
+      S.feverLeft = Math.max(0, S.feverLeft - dt);
+      if (feverBar) feverBar.style.transform = 'scaleX(' + (S.feverLeft / FEVER_SEC).toFixed(3) + ')';
+      if (S.feverLeft <= 0) endFever();
+    }
+
+    // 60초 타임어택 카운트다운
+    if (S.mode === 'time' && S.running && !S.over) {
+      S.timeLeft = Math.max(0, S.timeLeft - dt);
+      var nowSec = Math.ceil(S.timeLeft);
+      var secTxt = nowSec + 's';
+      if (turnsVal.textContent !== secTxt) {
+        turnsVal.textContent = secTxt;
+        if (nowSec > 0 && nowSec <= 10) tone(1320, 0.03, 'triangle', 0.02, 1000);
+      }
+      if (S.timeLeft <= 0 && !S.busy) checkEnd();
+    }
+
+    // 막판 긴장감 (비네트 + 심장박동)
+    updateDanger(dt);
   }
 
   function drawBoardBg() {
@@ -1688,6 +2036,32 @@
   }, { passive: false });
 
   canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  /* 마스코트 5번 연타 → 숨겨진 이스터에그 (스테이지당 1회) */
+  catAvatarEl.addEventListener('pointerdown', function (ev) {
+    ev.preventDefault();
+    audioInit();
+    if (!S.running || S.over) return;
+    var now = performance.now();
+    var kept = [];
+    for (var i = 0; i < mascotTaps.length; i++) {
+      if (now - mascotTaps[i] <= 1500) kept.push(mascotTaps[i]);
+    }
+    kept.push(now);
+    mascotTaps = kept;
+    catAvatarEl.classList.remove('tap');
+    void catAvatarEl.offsetWidth;
+    catAvatarEl.classList.add('tap');
+    if (mascotTaps.length >= 5) {
+      mascotTaps = [];
+      if (S.eggUsed) { toast('이번 판엔 이미 찾았어! 다음 판에 또 봐 🐾'); return; }
+      S.eggUsed = true;
+      S.eggCount++;
+      triggerEgg();
+    } else {
+      sfxClick();
+    }
+  });
 
   /* =========================================================
      15. 초기화
